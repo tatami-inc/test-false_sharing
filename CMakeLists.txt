@@ -26,3 +26,9 @@ FetchContent_MakeAvailable(nanobench)
 
 add_executable(sharing sharing.cpp)
 target_link_libraries(sharing nanobench::nanobench CLI11::CLI11)
+
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64)|(x64)|(AMD64)")
+    target_compile_definitions(sharing PRIVATE CACHE_LINE_SIZE=64)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "(arm64)")
+    target_compile_definitions(sharing PRIVATE CACHE_LINE_SIZE=128)
+endif()

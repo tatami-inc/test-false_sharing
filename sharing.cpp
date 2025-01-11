@@ -44,7 +44,6 @@ int main(int argc, char* argv[]) {
         }
     });
 
-    constexpr int CACHE_LINE_SIZE = 128;
     constexpr int DOUBLES_PER_LINE = CACHE_LINE_SIZE / sizeof(double);
 
     std::vector<double> spaced(njobs * nthreads);
