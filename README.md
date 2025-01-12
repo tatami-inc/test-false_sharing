@@ -60,18 +60,21 @@ Then on Intel i7 running Ubuntu 22.04 with GCC 11.4.0:
 
 | block size | naive | spaced | aligned | new-aligned | new-vector | 
 |------------|-------|--------|---------|-------------|------------|
-|         11 |    13 |      2 |       2 |           2 |          2 |
-|         21 |    18 |      2 |       2 |           2 |          2 |
-|         51 |    28 |     13 |       8 |           5 |          5 |
-|        101 |    49 |     16 |      12 |           9 |          9 |
-|        201 |    61 |     26 |      17 |          16 |         16 |
-|        501 |    78 |     42 |      42 |          42 |         41 |
-|       1001 |   159 |     83 |      92 |          81 |         80 |
-|       2001 |   226 |    168 |     158 |         157 |        156 |
+|         11 |    23 |      3 |       3 |           4 |          3 |
+|         21 |    26 |      4 |       4 |           5 |          4 |
+|         51 |    45 |      9 |       9 |           9 |          8 |
+|        101 |    72 |     18 |      15 |          17 |         13 |
+|        201 |   100 |     37 |      35 |          31 |         25 |
+|        501 |   126 |     68 |      66 |          78 |         64 |
+|       1001 |   252 |    130 |     150 |         151 |        125 |
+|       2001 |   358 |    277 |     252 |         315 |        257 |
 
-These results show that false sharing is responsible for a considerable performance loss, based on the differences in timings between `naive` and `spaced`.
-Some additional performance is achieved by aligning to the cache line boundaries, possibly from aligned SIMD loads.
+These results show that false sharing is responsible for a considerable performance loss in the naive approach compared to the spaced approach.
+On the Apple M2, some additional performance is extracted by aligning to the cache line boundaries, possibly from aligned SIMD loads.
+However, this is not consistently observed in my Intel runs - something happens at block sizes of 1000 to 1005 that causes the aligned approach to be slower!
+The new-aligned approach is also slower than other non-naive methods for Intel.
+This particular drop seems to be something specific with the alignment parameter in `new` as creating a `std::vector` and aligning it with `std::align` recovers performance.
 
 Interestingly, the new-vector approach is good in all scenarios despite the lack of any guarantees with respect to false sharing or alignment.
-This is a nice outcome as it implies that idiomatic C++ - namely, the creation of a vector in thread's scope - is performant.
-It is also a reminder to not be overly prescriptive as this can block compiler optimizations.
+This is pleasing as it implies that performance can be achieved with idiomatic C++ (namely, the creation of a temporary vector in each thread's scope).
+It is also a reminder to not be overly prescriptive as this can cause premature pessimizations in complex CPU architectures.
