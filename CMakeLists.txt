@@ -24,7 +24,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(cli11)
 FetchContent_MakeAvailable(nanobench)
 
-add_executable(sharing sharing.cpp)
+add_executable(sharing src/sharing.cpp src/naive.cpp src/spaced.cpp src/aligned.cpp src/new_aligned.cpp src/new_vector.cpp)
 target_link_libraries(sharing nanobench::nanobench CLI11::CLI11)
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64)|(x64)|(AMD64)")
