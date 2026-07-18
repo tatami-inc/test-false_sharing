@@ -1,13 +1,11 @@
-# False sharing for blocked multi-threading 
+# Choosing the allocation strategy
 
-## Introduction
+## Overview 
 
 When processing an array, we can split it up into contiguous blocks and assign each block to a thread.
-However, if each thread is repeatedly writing to the block, false sharing could occur at the block boundaries.
+However, if each thread is repeatedly writing to its block, false sharing could occur at the block boundaries.
 To avoid this, we instruct each thread to write to its own buffer before copying it back to the original array.
 The question is, does this make a difference?
-
-## Setup
 
 We try a few different approaches to characterize the performance of our system:
 
@@ -23,6 +21,8 @@ We try a few different approaches to characterize the performance of our system:
 - In the _new-vector_ approach, each thread allocates a temporary `std::vector` and modifies the values in that thread-specific vector.
   This hopes to mitigate false sharing by allowing heap memory to be allocated in thread-specific arenas.
 
+## Instructions
+
 To compile:
 
 ```console
@@ -30,19 +30,12 @@ cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
-We can now test all approaches with different sizes of the blocks (i.e., jobs per thread) as well as varying numbers of threads. 
-
-```console
-# block size of 1000 with 4 threads
-./build/sharing -n 1000 -t 4
-```
+We run the test binary with `./build/allocation -n <BLOCK SIZE> -t 4`, using block sizes that aren't a power of 2.
+This avoids unintended alignment to cache lines in the naive approach, which would eliminate false sharing.
 
 ## Results
 
-We run the test binary with `./build/sharing -n <BLOCK SIZE> -t 4`, using block sizes that aren't a power of 2.
-This avoids unintended alignment to cache lines in the naive approach, which would eliminate false sharing.
 The milliseconds per operation is shown for each approach in the tables below.
-
 First, on an Apple M2 running Sonoma 14.6.1 with Apple clang 15.0.0:
 
 | block size | naive | spaced | aligned | new-aligned | new-vector | 

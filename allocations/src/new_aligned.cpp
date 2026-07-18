@@ -18,7 +18,7 @@ void run_new_aligned(int nthreads, int njobs, int niter, int constant, std::vect
                 }
             }
             std::copy_n(ptr, njobs, output.begin() + start);
-            delete [] ptr;
+            ::operator delete [](ptr, std::align_val_t(CACHE_LINE_SIZE));
         }, t);
     }
 
